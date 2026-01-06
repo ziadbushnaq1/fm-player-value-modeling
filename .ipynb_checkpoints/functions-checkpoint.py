@@ -245,29 +245,18 @@ def analyze_transfer_targets(df, model, min_value_ratio=1.2):
         pd.DataFrame: A dataframe containing targets sorted by their Value Score.
     """
     targets = df.copy()
-
-    try:
-        feature_cols = list(model.feature_names_in_)
-    except AttributeError:
-        print("Warning: Model does not have feature_names_in_. Ensure columns match exactly.")
-        return None
-
-    missing_cols = [c for c in feature_cols if c not in targets.columns]
-    if missing_cols:
-        for col in missing_cols:
-            targets[col] = 0
     
-    # excluded_cols = [
-    #     'Transfer Value', 'Value_log', 'Wage', 'Wage_log', 'Last Trans. Fee', 'lastfee_log', 
-    #     'Transfer Fees Received', 'totalfees_log', 'Name', 'Based', 'Division', 'Personality', 
-    #     'Country', 'Position', 'Expires', 'Days Until Expiry', 'Begins', 'Age_at_Signing', 
-    #     'Years_at_Club', 'Transfer Status', 'Transfer_Status_bool', 'WR', 'Rec', 'Inf'
-    # ]
-    # excluded_cols.extend([c for c in targets.columns if c.startswith('Country_')])
+    excluded_cols = [
+        'Transfer Value', 'Value_log', 'Wage', 'Wage_log', 'Last Trans. Fee', 'lastfee_log', 
+        'Transfer Fees Received', 'totalfees_log', 'Name', 'Based', 'Division', 'Personality', 
+        'Country', 'Position', 'Expires', 'Days Until Expiry', 'Begins', 'Age_at_Signing', 
+        'Years_at_Club', 'Transfer Status', 'Transfer_Status_bool', 'WR', 'Rec', 'Inf'
+    ]
+    excluded_cols.extend([c for c in targets.columns if c.startswith('Country_')])
     
-    # feature_cols = [c for c in targets.columns 
-    #                 if c not in excluded_cols 
-    #                 and pd.api.types.is_numeric_dtype(targets[c])]
+    feature_cols = [c for c in targets.columns 
+                    if c not in excluded_cols 
+                    and pd.api.types.is_numeric_dtype(targets[c])]
     
     predicted_log = model.predict(targets[feature_cols])
     targets['Intrinsic_Value'] = np.expm1(predicted_log)
